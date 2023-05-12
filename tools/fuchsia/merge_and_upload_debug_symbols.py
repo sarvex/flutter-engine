@@ -63,22 +63,18 @@ def CheckCIPDPackageExists(package_name, tag):
     tag,
   ]
   stdout = subprocess.check_output(command)
-  match = re.search(r'No matching instances\.', stdout)
-  if match:
-    return False
-  else:
-    return True
+  return not (match := re.search(r'No matching instances\.', stdout))
 
 
 def ProcessCIPDPackage(upload, cipd_yaml, engine_version, out_dir, target_arch):
   _packaging_dir = GetPackagingDir(out_dir)
-  tag = 'git_revision:%s' % engine_version
-  package_name = 'flutter/fuchsia-debug-symbols-%s' % target_arch
+  tag = f'git_revision:{engine_version}'
+  package_name = f'flutter/fuchsia-debug-symbols-{target_arch}'
   already_exists = CheckCIPDPackageExists(
     package_name,
     tag)
   if already_exists:
-    print('CIPD package %s tag %s already exists!' % (package_name, tag))
+    print(f'CIPD package {package_name} tag {tag} already exists!')
 
   if upload and IsLinux() and not already_exists:
     command = [
@@ -87,9 +83,13 @@ def ProcessCIPDPackage(upload, cipd_yaml, engine_version, out_dir, target_arch):
     ]
   else:
     command = [
-        'cipd', 'pkg-build', '-pkg-def', cipd_yaml, '-out',
+        'cipd',
+        'pkg-build',
+        '-pkg-def',
+        cipd_yaml,
+        '-out',
         os.path.join(_packaging_dir,
-                     'fuchsia-debug-symbols-%s.cipd' % target_arch)
+                     f'fuchsia-debug-symbols-{target_arch}.cipd'),
     ]
 
   # Retry up to three times.  We've seen CIPD fail on verification in some
@@ -129,7 +129,7 @@ def HardlinkContents(dirA, dirB):
         # The last two path components provide a content address for a .build-id entry.
         tokens = os.path.split(dest)
         name = os.path.join(tokens[-2], tokens[-1])
-        print('%s already exists in destination; skipping linking' % name)
+        print(f'{name} already exists in destination; skipping linking')
         continue
       os.link(src, dest)
   return internal_symbol_dirs

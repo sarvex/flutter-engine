@@ -43,31 +43,31 @@ def main():
   simulator_x64_dylib = os.path.join(simulator_x64_framework, 'Flutter')
 
   if not os.path.isdir(arm64_framework):
-    print('Cannot find iOS arm64 Framework at %s' % arm64_framework)
+    print(f'Cannot find iOS arm64 Framework at {arm64_framework}')
     return 1
 
   if not os.path.isdir(armv7_framework):
-    print('Cannot find iOS armv7 Framework at %s' % armv7_framework)
+    print(f'Cannot find iOS armv7 Framework at {armv7_framework}')
     return 1
 
   if not os.path.isdir(simulator_x64_framework):
-    print('Cannot find iOS x64 simulator Framework at %s' % simulator_framework)
+    print(f'Cannot find iOS x64 simulator Framework at {simulator_framework}')
     return 1
 
   if not os.path.isfile(arm64_dylib):
-    print('Cannot find iOS arm64 dylib at %s' % arm64_dylib)
+    print(f'Cannot find iOS arm64 dylib at {arm64_dylib}')
     return 1
 
   if not os.path.isfile(armv7_dylib):
-    print('Cannot find iOS armv7 dylib at %s' % armv7_dylib)
+    print(f'Cannot find iOS armv7 dylib at {armv7_dylib}')
     return 1
 
   if not os.path.isfile(simulator_x64_dylib):
-    print('Cannot find iOS simulator dylib at %s' % simulator_dylib)
+    print(f'Cannot find iOS simulator dylib at {simulator_dylib}')
     return 1
 
   if not os.path.isfile(DSYMUTIL):
-    print('Cannot find dsymutil at %s' % DSYMUTIL)
+    print(f'Cannot find dsymutil at {DSYMUTIL}')
     return 1
 
   shutil.rmtree(fat_framework, True)
@@ -130,7 +130,7 @@ def process_framework(args, fat_framework, fat_framework_binary):
     subprocess.check_call(['xcrun', 'bitcode_strip', '-r', fat_framework_binary, '-o', fat_framework_binary])
 
   if args.dsym:
-    dsym_out = os.path.splitext(fat_framework)[0] + '.dSYM'
+    dsym_out = f'{os.path.splitext(fat_framework)[0]}.dSYM'
     subprocess.check_call([DSYMUTIL, '-o', dsym_out, fat_framework_binary])
 
   if args.strip:

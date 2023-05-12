@@ -16,9 +16,8 @@ def system(command, cwd=None):
 def find(patterns, start='.'):
   for path, dirs, files in os.walk(start):
     for basename in files + dirs:
-      if any([fnmatch.fnmatch(basename, pattern) for pattern in patterns]):
-        filename = os.path.join(path, basename)
-        yield filename
+      if any(fnmatch.fnmatch(basename, pattern) for pattern in patterns):
+        yield os.path.join(path, basename)
 
 def filter_file(path, predicate):
   with open(path, 'r+') as f:

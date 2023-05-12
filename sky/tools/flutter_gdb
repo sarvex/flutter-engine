@@ -49,9 +49,7 @@ def _get_device_abi(adb_path):
         [adb_path, 'shell', 'getprop', 'ro.product.cpu.abi']).strip()
     if abi_output.startswith('arm64'):
         return 'arm64'
-    if abi_output.startswith('arm'):
-        return 'arm'
-    return abi_output
+    return 'arm' if abi_output.startswith('arm') else abi_output
 
 
 def _default_local_engine(abi):
@@ -183,13 +181,13 @@ class GdbServer(object):
             return 1
 
         abi = _get_device_abi(adb_path)
-        gdb_server_local_path = 'third_party/android_tools/ndk/prebuilt/android-%s/gdbserver/gdbserver' % abi
+        gdb_server_local_path = f'third_party/android_tools/ndk/prebuilt/android-{abi}/gdbserver/gdbserver'
 
         # Copy gdbserver to the package's data directory.
         subprocess.check_call([adb_path, 'push',
                                os.path.join(flutter_root, gdb_server_local_path),
                                GdbServer.GDB_SERVER_DEVICE_TMP_PATH])
-        gdb_server_device_path = '/data/data/%s/gdbserver' % args.package
+        gdb_server_device_path = f'/data/data/{args.package}/gdbserver'
         subprocess.check_call([adb_path, 'shell', 'run-as', args.package, 'cp', '-F',
                                GdbServer.GDB_SERVER_DEVICE_TMP_PATH,
                                gdb_server_device_path])

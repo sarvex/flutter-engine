@@ -29,7 +29,7 @@ def main():
 
 def create_xcframework(location, name, frameworks):
   output_dir = os.path.abspath(location)
-  output_xcframework = os.path.join(output_dir, '%s.xcframework' % name)
+  output_xcframework = os.path.join(output_dir, f'{name}.xcframework')
 
   if not os.path.exists(output_dir):
     os.makedirs(output_dir)

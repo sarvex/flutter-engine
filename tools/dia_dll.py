@@ -56,7 +56,7 @@ def GetDiaDll():
 
 def CopyFile(src, dst):
   """Copy a file from src to dst."""
-  print("Copying %s to %s" % (str(src), str(dst)))
+  print(f"Copying {str(src)} to {str(dst)}")
   shutil.copy(src, dst)
 
 

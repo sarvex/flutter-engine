@@ -30,10 +30,10 @@ def main():
 
   if bad_files:
     print('')
-    print('Illegal import %s detected in the following files:' % ANDROID_LOG_CLASS)
+    print(f'Illegal import {ANDROID_LOG_CLASS} detected in the following files:')
     for bad_file in bad_files:
-      print('  - ' + bad_file)
-    print('Use %s instead.' % FLUTTER_LOG_CLASS)
+      print(f'  - {bad_file}')
+    print(f'Use {FLUTTER_LOG_CLASS} instead.')
     print('')
     return 1
 

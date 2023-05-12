@@ -8,6 +8,7 @@
 Tests for font-subset
 '''
 
+
 import filecmp
 import os
 import subprocess
@@ -19,11 +20,14 @@ MATERIAL_TTF = os.path.join(SCRIPT_DIR, 'fixtures', 'MaterialIcons-Regular.ttf')
 IS_WINDOWS = sys.platform.startswith(('cygwin', 'win'))
 EXE = '.exe' if IS_WINDOWS else ''
 BAT = '.bat' if IS_WINDOWS else ''
-FONT_SUBSET = os.path.join(SRC_DIR, 'out', 'host_debug', 'font-subset' + EXE)
+FONT_SUBSET = os.path.join(SRC_DIR, 'out', 'host_debug', f'font-subset{EXE}')
 if not os.path.isfile(FONT_SUBSET):
-  FONT_SUBSET = os.path.join(SRC_DIR, 'out', 'host_debug_unopt', 'font-subset' + EXE)
+  FONT_SUBSET = os.path.join(SRC_DIR, 'out', 'host_debug_unopt',
+                             f'font-subset{EXE}')
 if not os.path.isfile(FONT_SUBSET):
-  raise Exception('Could not locate font-subset%s in host_debug or host_debug_unopt - build before running this script.' % EXE)
+  raise Exception(
+      f'Could not locate font-subset{EXE} in host_debug or host_debug_unopt - build before running this script.'
+  )
 
 COMPARE_TESTS = (
   (True,  '1.ttf', MATERIAL_TTF, [r'57347']),
@@ -49,8 +53,8 @@ FAIL_TESTS = [
 
 def RunCmd(cmd, codepoints, fail=False):
   print('Running command:')
-  print('       %s' % ' '.join(cmd))
-  print('STDIN: "%s"' % ' '.join(codepoints))
+  print(f"       {' '.join(cmd)}")
+  print(f"""STDIN: "{' '.join(codepoints)}\"""")
   p = subprocess.Popen(
     cmd,
     stdout=subprocess.PIPE,
@@ -60,7 +64,7 @@ def RunCmd(cmd, codepoints, fail=False):
   )
   stdout_data, stderr_data = p.communicate(input=' '.join(codepoints))
   if p.returncode != 0 and fail == False:
-    print('FAILURE: %s' % p.returncode)
+    print(f'FAILURE: {p.returncode}')
     print('STDOUT:')
     print(stdout_data)
     print('STDERR:')
@@ -78,7 +82,7 @@ def RunCmd(cmd, codepoints, fail=False):
 
 
 def main():
-  print('Using font subset binary at %s' % FONT_SUBSET)
+  print(f'Using font subset binary at {FONT_SUBSET}')
   failures = 0
   for should_pass, golden_font, input_font, codepoints in COMPARE_TESTS:
     gen_ttf = os.path.join(SCRIPT_DIR, 'gen', golden_font)
@@ -87,7 +91,7 @@ def main():
     RunCmd(cmd, codepoints)
     cmp = filecmp.cmp(gen_ttf, golden_ttf, shallow=False)
     if (should_pass and not cmp) or (not should_pass and cmp):
-      print('Test case %s failed.' % cmd)
+      print(f'Test case {cmd} failed.')
       failures += 1
 
   with open(os.devnull, 'w') as devnull:
@@ -96,7 +100,7 @@ def main():
         failures += 1
 
   if failures > 0:
-    print('%s test(s) failed.' % failures)
+    print(f'{failures} test(s) failed.')
     return 1
 
   print('All tests passed')

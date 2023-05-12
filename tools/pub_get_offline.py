@@ -45,9 +45,9 @@ def CheckPackage(package):
     packages_data = data_dict["packages"]
     for package_data in packages_data:
       package_uri = package_data["rootUri"]
-      package_name = package_data["name"]
       if ".pub-cache" in package_uri and "pub.dartlang.org" in package_uri:
-        print("Error: package '%s' was fetched from pub" % package_name)
+        package_name = package_data["name"]
+        print(f"Error: package '{package_name}' was fetched from pub")
         pub_count = pub_count + 1
   if pub_count > 0:
     print("Error: %d packages were fetched from pub for %s" % (pub_count, package))
@@ -58,9 +58,7 @@ def CheckPackage(package):
 
 def Main():
   leading = os.path.join("src", "third_party", "dart", "tools", "sdks", "dart-sdk", "bin")
-  pub = "pub"
-  if os.name == "nt":
-    pub = "pub.bat"
+  pub = "pub.bat" if os.name == "nt" else "pub"
   pubcmd = [os.path.abspath(os.path.join(leading, pub)), "get", "--offline"]
 
   pub_count = 0
@@ -69,10 +67,7 @@ def Main():
       return 1
     pub_count = pub_count + CheckPackage(package)
 
-  if pub_count > 0:
-    return 1
-
-  return 0
+  return 1 if pub_count > 0 else 0
 
 
 if __name__ == '__main__':

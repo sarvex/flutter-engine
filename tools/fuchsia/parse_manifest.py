@@ -26,7 +26,7 @@ def main():
     data = json.load(f)
 
   output = {}
-  target = args.clang_cpu + '-fuchsia'
+  target = f'{args.clang_cpu}-fuchsia'
 
   for d in data:
     if target in d['target']:
@@ -36,7 +36,7 @@ def main():
         # and experiments
         key = runtime['soname'] + ''.join(d['cflags'])
         md5 = hashlib.md5(key.encode()).hexdigest()
-        hash_key = 'md5_%s' % md5
+        hash_key = f'md5_{md5}'
         # Uncomment this line to get the hash keys
         # print runtime['dist'], d['cflags'], hash_key
         output[hash_key] = os.path.dirname(runtime['dist'])

@@ -39,11 +39,10 @@ def CopyPath(src, dst):
     EnsureParentExists(dst)
     shutil.copytree(src, dst)
   except OSError as exc:
-    if exc.errno == errno.ENOTDIR:
-      if not SameFile(src, dst):
-        shutil.copyfile(src, dst)
-    else:
+    if exc.errno != errno.ENOTDIR:
       raise
+    if not SameFile(src, dst):
+      shutil.copyfile(src, dst)
 
 
 def main():

@@ -15,12 +15,11 @@ def PackageName(line):
   return line.split(":")[1].strip()
 
 def main(pubspec_file):
-  source_file = open(pubspec_file, "r")
-  for line in source_file:
-    if line.startswith("name:"):
-      print(PackageName(line))
-      return 0
-  source_file.close()
+  with open(pubspec_file, "r") as source_file:
+    for line in source_file:
+      if line.startswith("name:"):
+        print(PackageName(line))
+        return 0
   # Couldn't find it.
   return -1
 

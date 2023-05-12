@@ -41,9 +41,7 @@ def main():
   ]
 
   for archive in args.archives:
-    pm_publish_command.append('-f')
-    pm_publish_command.append(archive)
-
+    pm_publish_command.extend(('-f', archive))
   subprocess.check_call(pm_publish_command)
 
   return 0

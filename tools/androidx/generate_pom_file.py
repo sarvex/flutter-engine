@@ -79,8 +79,8 @@ def main():
   args = parser.parse_args()
   engine_artifact_id = args.engine_artifact_id
   engine_version = args.engine_version
-  artifact_version = '1.0.0-' + engine_version
-  out_file_name = '%s.pom' % engine_artifact_id
+  artifact_version = f'1.0.0-{engine_version}'
+  out_file_name = f'{engine_artifact_id}.pom'
 
   pom_dependencies = ''
   if args.include_embedding_dependencies:
@@ -96,7 +96,7 @@ def main():
     f.write(POM_FILE_CONTENT.format(engine_artifact_id, artifact_version, pom_dependencies))
 
   # Write the Maven metadata file.
-  with open(os.path.join(args.destination, '%s.maven-metadata.xml' % engine_artifact_id), 'w') as f:
+  with open(os.path.join(args.destination, f'{engine_artifact_id}.maven-metadata.xml'), 'w') as f:
     timestamp = datetime.datetime.utcnow().strftime("%Y%m%d.%H%M%S")
     f.write(MAVEN_METADATA_CONTENT.format(engine_artifact_id, artifact_version, timestamp))
 

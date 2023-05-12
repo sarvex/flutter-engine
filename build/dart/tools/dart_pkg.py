@@ -36,7 +36,7 @@ def ensure_dir_exists(path):
 def has_pubspec_yaml(paths):
   for path in paths:
     _, filename = os.path.split(path)
-    if 'pubspec.yaml' == filename:
+    if filename == 'pubspec.yaml':
       return True
   return False
 
@@ -46,14 +46,11 @@ def link(from_root, to_root):
   try:
     os.unlink(to_root)
   except OSError as e:
-    if e.errno == errno.ENOENT:
-      pass
-
+    pass
   try:
     os.symlink(from_root, to_root)
   except OSError as e:
-    if e.errno == errno.EEXIST:
-      pass
+    pass
 
 
 def copy(from_root, to_root, filter_func=None):
@@ -124,9 +121,7 @@ def remove_broken_symlink(path):
   try:
     link_path = os.readlink(path)
   except OSError as e:
-    # Path was not a symlink.
-    if e.errno == errno.EINVAL:
-      pass
+    pass
   else:
     if not os.path.exists(link_path):
       remove_if_exists(path)
@@ -142,18 +137,14 @@ def remove_broken_symlinks(root_dir):
 
 
 def analyze_entrypoints(dart_sdk, package_root, entrypoints):
-  cmd = [ "python", DART_ANALYZE ]
-  cmd.append("--dart-sdk")
-  cmd.append(dart_sdk)
-  cmd.append("--entrypoints")
+  cmd = ["python", DART_ANALYZE, "--dart-sdk", dart_sdk, "--entrypoints"]
   cmd.extend(entrypoints)
   cmd.append("--package-root")
-  cmd.append(package_root)
-  cmd.append("--no-hints")
+  cmd.extend((package_root, "--no-hints"))
   try:
     subprocess.check_output(cmd, stderr=subprocess.STDOUT)
   except subprocess.CalledProcessError as e:
-    print('Failed analyzing %s' % entrypoints)
+    print(f'Failed analyzing {entrypoints}')
     print(e.output)
     return e.returncode
   return 0
@@ -228,7 +219,7 @@ def main():
   mappings = {}
   for mapping in args.sdk_ext_mappings:
     library, path = mapping.split(',', 1)
-    mappings[library] = '../sdk_ext/%s' % path
+    mappings[library] = f'../sdk_ext/{path}'
 
   sdkext_path = os.path.join(lib_path, '_sdkext')
   if mappings:

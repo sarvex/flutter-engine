@@ -22,7 +22,7 @@ def GetLLVMBinDirectory():
     raise Exception("Unknown/Unsupported platform.")
   llvm_bin_dir = os.path.abspath(os.path.join(buildtool_dir, platform_dir, "clang/bin"))
   if not os.path.exists(llvm_bin_dir):
-    raise Exception("LLVM directory %s double not be located." % llvm_bin_dir)
+    raise Exception(f"LLVM directory {llvm_bin_dir} double not be located.")
   return llvm_bin_dir
 
 

@@ -93,26 +93,26 @@ def FindExecutablePath(path):
     return path
 
   if IsWindows():
-    exe_path = path + '.exe'
+    exe_path = f'{path}.exe'
     if os.path.exists(exe_path):
       return exe_path
 
-    bat_path = path + '.bat'
+    bat_path = f'{path}.bat'
     if os.path.exists(bat_path):
       return bat_path
 
-  raise Exception('Executable %s does not exist!' % path)
+  raise Exception(f'Executable {path} does not exist!')
 
 
 def RunEngineExecutable(build_dir, executable_name, filter, flags=[],
                         cwd=buildroot_dir, forbidden_output=[], expect_failure=False):
   if filter is not None and executable_name not in filter:
-    print('Skipping %s due to filter.' % executable_name)
+    print(f'Skipping {executable_name} due to filter.')
     return
 
   executable = FindExecutablePath(os.path.join(build_dir, executable_name))
 
-  print('Running %s in %s' % (executable_name, cwd))
+  print(f'Running {executable_name} in {cwd}')
   test_command = [ executable ] + flags
   print(' '.join(test_command))
   RunCmd(test_command, cwd=cwd, forbidden_output=forbidden_output, expect_failure=expect_failure)
@@ -148,10 +148,7 @@ def RunCCTests(build_dir, filter):
 
   flow_flags = ['--gtest_filter=-PerformanceOverlayLayer.Gold']
   if IsLinux():
-    flow_flags = [
-      '--golden-dir=%s' % golden_dir,
-      '--font-file=%s' % roboto_font_path,
-    ]
+    flow_flags = [f'--golden-dir={golden_dir}', f'--font-file={roboto_font_path}']
   RunEngineExecutable(build_dir, 'flow_unittests', filter, flow_flags + shuffle_flags)
 
   # TODO(44614): Re-enable after https://github.com/flutter/flutter/issues/44614 has been addressed.
@@ -206,7 +203,7 @@ def RunEngineBenchmarks(build_dir, filter):
 
 
 def SnapshotTest(build_dir, test_packages, dart_file, kernel_file_output, verbose_dart_snapshot):
-  print("Generating snapshot for test %s" % dart_file)
+  print(f"Generating snapshot for test {dart_file}")
 
   dart = os.path.join(build_dir, 'dart-sdk', 'bin', 'dart')
   frontend_server = os.path.join(build_dir, 'gen', 'frontend_server.dart.snapshot')
@@ -250,7 +247,7 @@ def SnapshotTest(build_dir, test_packages, dart_file, kernel_file_output, verbos
 
 def RunDartTest(build_dir, test_packages, dart_file, verbose_dart_snapshot, multithreaded,
                 enable_observatory=False, expect_failure=False):
-  kernel_file_name = os.path.basename(dart_file) + '.kernel.dill'
+  kernel_file_name = f'{os.path.basename(dart_file)}.kernel.dill'
   kernel_file_output = os.path.join(out_dir, kernel_file_name)
 
   SnapshotTest(build_dir, test_packages, dart_file, kernel_file_output, verbose_dart_snapshot)
@@ -259,9 +256,8 @@ def RunDartTest(build_dir, test_packages, dart_file, verbose_dart_snapshot, mult
   if not enable_observatory:
     command_args.append('--disable-observatory')
 
-  dart_file_contents = open(dart_file, 'r')
-  custom_options = re.findall("// FlutterTesterOptions=(.*)", dart_file_contents.read())
-  dart_file_contents.close()
+  with open(dart_file, 'r') as dart_file_contents:
+    custom_options = re.findall("// FlutterTesterOptions=(.*)", dart_file_contents.read())
   command_args.extend(custom_options)
 
   command_args += [
@@ -275,7 +271,9 @@ def RunDartTest(build_dir, test_packages, dart_file, verbose_dart_snapshot, mult
   else:
     threading = 'single-threaded'
 
-  print("Running test '%s' using 'flutter_tester' (%s)" % (kernel_file_name, threading))
+  print(
+      f"Running test '{kernel_file_name}' using 'flutter_tester' ({threading})"
+  )
   forbidden_output = [] if 'unopt' in build_dir or expect_failure else ['[ERROR']
   RunEngineExecutable(build_dir, 'flutter_tester', None, command_args,
                       forbidden_output=forbidden_output, expect_failure=expect_failure)
@@ -324,7 +322,9 @@ def EnsureJavaTestsAreBuilt(android_out_dir):
     RunCmd(ninja_command, cwd=buildroot_dir)
     return
 
-  assert android_out_dir != "out/android_debug_unopt", "%s doesn't exist. Run GN to generate the directory first" % android_out_dir
+  assert (
+      android_out_dir != "out/android_debug_unopt"
+  ), f"{android_out_dir} doesn't exist. Run GN to generate the directory first"
 
   # Otherwise prepare the directory first, then build the test.
   gn_command = [
@@ -353,7 +353,9 @@ def EnsureIosTestsAreBuilt(ios_out_dir):
     RunCmd(ninja_command, cwd=buildroot_dir)
     return
 
-  assert ios_out_dir != "out/ios_debug_sim_unopt", "%s doesn't exist. Run GN to generate the directory first" % ios_out_dir
+  assert (
+      ios_out_dir != "out/ios_debug_sim_unopt"
+  ), f"{ios_out_dir} doesn't exist. Run GN to generate the directory first"
 
   # Otherwise prepare the directory first, then build the test.
   gn_command = [
@@ -373,8 +375,8 @@ def AssertExpectedJavaVersion():
   EXPECTED_VERSION = '1.8'
   # `java -version` is output to stderr. https://bugs.java.com/bugdatabase/view_bug.do?bug_id=4380614
   version_output = subprocess.check_output(['java', '-version'], stderr=subprocess.STDOUT)
-  match = bool(re.compile('version "%s' % EXPECTED_VERSION).search(version_output))
-  message = "JUnit tests need to be run with Java %s. Check the `java -version` on your PATH." % EXPECTED_VERSION
+  match = bool(re.compile(f'version "{EXPECTED_VERSION}').search(version_output))
+  message = f"JUnit tests need to be run with Java {EXPECTED_VERSION}. Check the `java -version` on your PATH."
   assert match, message
 
 
@@ -384,7 +386,7 @@ def AssertExpectedXcodeVersion():
   version_output = subprocess.check_output(['xcodebuild', '-version'])
   match = re.match("Xcode (\d+)", version_output)
   message = "Xcode must be installed to run the iOS embedding unit tests"
-  assert match.group(1) in EXPECTED_MAJOR_VERSION, message
+  assert match[1] in EXPECTED_MAJOR_VERSION, message
 
 
 def RunJavaTests(filter, android_variant='android_debug_unopt'):
@@ -403,13 +405,14 @@ def RunJavaTests(filter, android_variant='android_debug_unopt'):
 
   test_class = filter if filter else 'io.flutter.FlutterTestSuite'
   command = [
-    'java',
-    '-Drobolectric.offline=true',
-    '-Drobolectric.dependency.dir=' + embedding_deps_dir,
-    '-classpath', ':'.join(classpath),
-    '-Drobolectric.logging=stdout',
-    'org.junit.runner.JUnitCore',
-    test_class
+      'java',
+      '-Drobolectric.offline=true',
+      f'-Drobolectric.dependency.dir={embedding_deps_dir}',
+      '-classpath',
+      ':'.join(classpath),
+      '-Drobolectric.logging=stdout',
+      'org.junit.runner.JUnitCore',
+      test_class,
   ]
 
   RunCmd(command)
@@ -454,24 +457,24 @@ def RunDartTests(build_dir, filter, verbose_dart_snapshot):
     cwd=dart_tests_dir,
   )
 
-  dart_observatory_tests = glob.glob('%s/observatory/*_test.dart' % dart_tests_dir)
-  dart_tests = glob.glob('%s/*_test.dart' % dart_tests_dir)
+  dart_observatory_tests = glob.glob(f'{dart_tests_dir}/observatory/*_test.dart')
+  dart_tests = glob.glob(f'{dart_tests_dir}/*_test.dart')
   test_packages = os.path.join(dart_tests_dir, '.packages')
 
   if 'release' not in build_dir:
     for dart_test_file in dart_observatory_tests:
       if filter is not None and os.path.basename(dart_test_file) not in filter:
-        print("Skipping %s due to filter." % dart_test_file)
+        print(f"Skipping {dart_test_file} due to filter.")
       else:
-        print("Testing dart file %s with observatory enabled" % dart_test_file)
+        print(f"Testing dart file {dart_test_file} with observatory enabled")
         RunDartTest(build_dir, test_packages, dart_test_file, verbose_dart_snapshot, True, True)
         RunDartTest(build_dir, test_packages, dart_test_file, verbose_dart_snapshot, False, True)
 
   for dart_test_file in dart_tests:
     if filter is not None and os.path.basename(dart_test_file) not in filter:
-      print("Skipping %s due to filter." % dart_test_file)
+      print(f"Skipping {dart_test_file} due to filter.")
     else:
-      print("Testing dart file %s" % dart_test_file)
+      print(f"Testing dart file {dart_test_file}")
       RunDartTest(build_dir, test_packages, dart_test_file, verbose_dart_snapshot, True)
       RunDartTest(build_dir, test_packages, dart_test_file, verbose_dart_snapshot, False)
 
@@ -485,7 +488,7 @@ def RunDartSmokeTest(build_dir, verbose_dart_snapshot):
 
 def RunFrontEndServerTests(build_dir):
   test_dir = os.path.join(buildroot_dir, 'flutter', 'flutter_frontend_server')
-  dart_tests = glob.glob('%s/test/*_test.dart' % test_dir)
+  dart_tests = glob.glob(f'{test_dir}/test/*_test.dart')
   for dart_test_file in dart_tests:
     opts = [
       '--disable-dart-dev',
@@ -512,7 +515,7 @@ def RunConstFinderTests(build_dir):
 
 def RunLitetestTests(build_dir):
   test_dir = os.path.join(buildroot_dir, 'flutter', 'testing', 'litetest')
-  dart_tests = glob.glob('%s/test/*_test.dart' % test_dir)
+  dart_tests = glob.glob(f'{test_dir}/test/*_test.dart')
   for dart_test_file in dart_tests:
     opts = [
       '--disable-dart-dev',
@@ -527,7 +530,7 @@ def RunLitetestTests(build_dir):
 
 def RunBenchmarkTests(build_dir):
   test_dir = os.path.join(buildroot_dir, 'flutter', 'testing', 'benchmark')
-  dart_tests = glob.glob('%s/test/*_test.dart' % test_dir)
+  dart_tests = glob.glob(f'{test_dir}/test/*_test.dart')
   for dart_test_file in dart_tests:
     opts = [
       '--disable-dart-dev',
@@ -570,7 +573,8 @@ def main():
 
   build_dir = os.path.join(out_dir, args.variant)
   if args.type != 'java':
-    assert os.path.exists(build_dir), 'Build variant directory %s does not exist!' % build_dir
+    assert os.path.exists(
+        build_dir), f'Build variant directory {build_dir} does not exist!'
 
   engine_filter = args.engine_filter.split(',') if args.engine_filter else None
   if 'engine' in types:
@@ -589,7 +593,9 @@ def main():
     assert not IsWindows(), "Android engine files can't be compiled on Windows."
     java_filter = args.java_filter
     if ',' in java_filter or '*' in java_filter:
-      print('Can only filter JUnit4 tests by single entire class name, eg "io.flutter.SmokeTest". Ignoring filter=' + java_filter)
+      print(
+          f'Can only filter JUnit4 tests by single entire class name, eg "io.flutter.SmokeTest". Ignoring filter={java_filter}'
+      )
       java_filter = None
     RunJavaTests(java_filter, args.android_variant)
 

@@ -56,8 +56,9 @@ def RunExecutable(command):
 
 
 def RunGN(variant_dir, flags):
-  print('Running gn for variant "%s" with flags: %s' %
-        (variant_dir, ','.join(flags)))
+  print(
+      f"""Running gn for variant "{variant_dir}" with flags: {','.join(flags)}"""
+  )
   RunExecutable([
       os.path.join('flutter', 'tools', 'gn'),
   ] + flags)
@@ -129,8 +130,8 @@ def CopyFlutterTesterBinIfExists(source, destination):
 def CopyToBucketWithMode(source, destination, aot, product, runner_type):
   mode = 'aot' if aot else 'jit'
   product_suff = '_product' if product else ''
-  runner_name = '%s_%s%s_runner' % (runner_type, mode, product_suff)
-  far_dir_name = '%s_far' % runner_name
+  runner_name = f'{runner_type}_{mode}{product_suff}_runner'
+  far_dir_name = f'{runner_name}_far'
   source_root = os.path.join(_out_dir, source)
   far_base = os.path.join(source_root, far_dir_name)
   CreateMetaPackage(far_base, runner_name)
@@ -139,7 +140,7 @@ def CopyToBucketWithMode(source, destination, aot, product, runner_type):
 
   destination = os.path.join(_bucket_directory, destination, mode)
   CreateFarPackage(pm_bin, far_base, key_path, destination)
-  patched_sdk_dirname = '%s_runner_patched_sdk' % runner_type
+  patched_sdk_dirname = f'{runner_type}_runner_patched_sdk'
   patched_sdk_dir = os.path.join(source_root, patched_sdk_dirname)
   dest_sdk_path = os.path.join(destination, patched_sdk_dirname)
   if not os.path.exists(dest_sdk_path):
@@ -159,8 +160,13 @@ def CopyVulkanDepsToBucket(src, dst, arch):
   sdk_path = GetFuchsiaSDKPath()
   deps_bucket_path = os.path.join(_bucket_directory, dst)
   if not os.path.exists(deps_bucket_path):
-    FindFileAndCopyTo('VkLayer_khronos_validation.json', '%s/pkg' % (sdk_path), deps_bucket_path)
-    FindFileAndCopyTo('VkLayer_khronos_validation.so', '%s/arch/%s' % (sdk_path, arch), deps_bucket_path)
+    FindFileAndCopyTo('VkLayer_khronos_validation.json', f'{sdk_path}/pkg',
+                      deps_bucket_path)
+    FindFileAndCopyTo(
+        'VkLayer_khronos_validation.so',
+        f'{sdk_path}/arch/{arch}',
+        deps_bucket_path,
+    )
 
 def CopyIcuDepsToBucket(src, dst):
   source_root = os.path.join(_out_dir, src)
@@ -169,9 +175,9 @@ def CopyIcuDepsToBucket(src, dst):
 
 def BuildBucket(runtime_mode, arch, optimized, product):
   unopt = "_unopt" if not optimized else ""
-  out_dir = 'fuchsia_%s%s_%s/' % (runtime_mode, unopt, arch)
-  bucket_dir = 'flutter/%s/%s%s/' % (arch, runtime_mode, unopt)
-  deps_dir = 'flutter/%s/deps/' % (arch)
+  out_dir = f'fuchsia_{runtime_mode}{unopt}_{arch}/'
+  bucket_dir = f'flutter/{arch}/{runtime_mode}{unopt}/'
+  deps_dir = f'flutter/{arch}/deps/'
   CopyToBucket(out_dir, bucket_dir, product)
   CopyVulkanDepsToBucket(out_dir, deps_dir, arch)
   CopyIcuDepsToBucket(out_dir, deps_dir)
@@ -207,11 +213,7 @@ def CheckCIPDPackageExists(package_name, tag):
     tag,
   ]
   stdout = subprocess.check_output(command)
-  match = re.search(r'No matching instances\.', stdout)
-  if match:
-    return False
-  else:
-    return True
+  return not (match := re.search(r'No matching instances\.', stdout))
 
 def RunCIPDCommandWithRetries(command):
   # Retry up to three times.  We've seen CIPD fail on verification in some
@@ -223,7 +225,7 @@ def RunCIPDCommandWithRetries(command):
       subprocess.check_call(command, cwd=_bucket_directory)
       break
     except subprocess.CalledProcessError:
-      print('Failed %s times' % tries + 1)
+      print(f'Failed {tries} times' + 1)
       if tries == num_tries - 1:
         raise
 
@@ -243,10 +245,9 @@ def ProcessCIPDPackage(upload, engine_version):
       print('--upload requires --engine-version to be specified.')
       return
 
-  tag = 'git_revision:%s' % engine_version
-  already_exists = CheckCIPDPackageExists('flutter/fuchsia', tag)
-  if already_exists:
-    print('CIPD package flutter/fuchsia tag %s already exists!' % tag)
+  tag = f'git_revision:{engine_version}'
+  if already_exists := CheckCIPDPackageExists('flutter/fuchsia', tag):
+    print(f'CIPD package flutter/fuchsia tag {tag} already exists!')
     return
 
   RunCIPDCommandWithRetries([
@@ -258,7 +259,7 @@ def ProcessCIPDPackage(upload, engine_version):
 def BuildTarget(runtime_mode, arch, optimized, enable_lto, enable_legacy,
                 asan, dart_version_git_info, additional_targets=[]):
   unopt = "_unopt" if not optimized else ""
-  out_dir = 'fuchsia_%s%s_%s' % (runtime_mode, unopt, arch)
+  out_dir = f'fuchsia_{runtime_mode}{unopt}_{arch}'
   flags = [
       '--fuchsia',
       '--fuchsia-cpu',

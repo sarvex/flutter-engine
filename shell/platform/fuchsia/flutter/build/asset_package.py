@@ -33,22 +33,20 @@ def main():
   env['FLUTTER_ROOT'] = args.flutter_root
 
   call_args = [
-    args.flutter_tools,
-    '--asset-dir=%s' % args.asset_dir,
-    '--packages=%s' % args.packages,
+      args.flutter_tools,
+      f'--asset-dir={args.asset_dir}',
+      f'--packages={args.packages}',
   ]
   if 'manifest' in args:
-    call_args.append('--manifest=%s' % args.manifest)
+    call_args.append(f'--manifest={args.manifest}')
 
   if args.asset_manifest_out:
-    call_args.append('--asset-manifest-out=%s' % args.asset_manifest_out)
+    call_args.append(f'--asset-manifest-out={args.asset_manifest_out}')
 
   if args.component_name:
-    call_args.append('--component-name=%s' % args.component_name)
+    call_args.append(f'--component-name={args.component_name}')
 
-  result = subprocess.call(call_args, env=env, cwd=args.app_dir)
-
-  return result
+  return subprocess.call(call_args, env=env, cwd=args.app_dir)
 
 if __name__ == '__main__':
   sys.exit(main())

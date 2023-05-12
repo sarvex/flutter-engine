@@ -44,9 +44,7 @@ def CreateMetaPackage(dst_root, far_name):
   meta = os.path.join(dst_root, 'meta')
   if not os.path.isdir(meta):
     os.makedirs(meta)
-  content = {}
-  content['name'] = far_name
-  content['version'] = '0'
+  content = {'name': far_name, 'version': '0'}
   package = os.path.join(meta, 'package')
   with open(package, 'w') as out_file:
     json.dump(content, out_file)
